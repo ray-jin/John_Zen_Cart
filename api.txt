@@ -116,3 +116,37 @@ options_values	success : array of collection, it’s size can be 0
 failure : null
 status	success : 0
 failure : -1
+5.	List product_attributes
+List all products with options & options_values under the product
+Request
+Method	URL            
+GET	index.php/store/list_products_attributes?product_id=134&language_id=1
+
+
+Type	Params	Values
+GET	product_id	int : desired product id
+GET	language_id 	int : language id ( 1 : English)
+
+
+Response
+Value	Response
+Format:
+	{
+ “attributes” : ”array of array”, 
+     “status”     : “status”
+}
+
+attributes in details :
+ [{"options_id" : "29",
+   "options_name" : " ELiquid",
+   "values_list" : " array",
+}]
+
+values_list in details :
+ [{"options_values_id" : "471",
+   "options_values_name" : "Amerismoke - Made in USA Liquid - Cherry High"
+}]
+attributes	success : array of collection, it’s size can be 0
+failure : null
+status	success : 0
+failure : -1

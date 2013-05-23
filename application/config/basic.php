@@ -27,3 +27,20 @@
         $config['failed']="Failed";
         $config['unknown_error']="unknow error";
         $config['not_exist']="does not exist";
+        
+        
+        define('DIR_FS_CATALOG', 'http://192.168.180.90:1300//john/');
+
+        //the following path is a COMPLETE path to the /logs/ folder  eg: /var/www/vhost/accountname/public_html/store/logs ... and no trailing slash
+        define('DIR_FS_LOGS', 'C:/xampp/htdocs/zen-cart/logs');
+
+        define('DIR_FS_CATALOG_LANGUAGES', DIR_FS_CATALOG . 'includes/languages/');
+        define('DIR_FS_CATALOG_IMAGES', DIR_FS_CATALOG . 'images/');
+        define('DIR_FS_CATALOG_MODULES', DIR_FS_CATALOG . 'includes/modules/');
+        define('DIR_FS_CATALOG_TEMPLATES', DIR_FS_CATALOG . 'includes/templates/');
+
+        define('DIR_FS_EMAIL_TEMPLATES', DIR_FS_CATALOG . 'email/');
+        define('DIR_FS_DOWNLOAD', DIR_FS_CATALOG . 'download/');
+        define('IMAGE_SUFFIX_MEDIUM', '_MED');
+        define('IMAGE_SUFFIX_LARGE', '_LRG');
+        define('DIR_WS_IMAGES', 'images/');

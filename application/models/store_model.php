@@ -44,12 +44,20 @@ class Store_model extends CI_Model
 	 */
 	function list_categories($parent_id,$language_id)
 	{
-		$this->db->where('categories_status', 1);
+		/*$this->db->where('categories_status', 1);
                 $this->db->where('parent_id', $parent_id);
                 $this->db->order_by("sort_order", "asc"); 
                 $this->db->order_by("categories_id", "asc");
-                
-		$query = $this->db->get($this->tbl_category_name);
+                */
+            
+             $sql = "SELECT c.categories_id, c.categories_image, cd.categories_name  FROM (`".$this->tbl_category_name."` c) 
+                 , `".$this->tbl_category_description_name."` cd 
+                WHERE `categories_status` =  1   AND c.`parent_id`=".$parent_id." and cd.`categories_id`=c.`categories_id` 
+ORDER BY c.`sort_order` asc , cd.`categories_name` ASC";
+             
+              $query = $this->db->query($sql);
+             error_log($sql);
+		//$query = $this->db->get($this->tbl_category_name);
 
                 $list=array(); $i=0;
                 foreach ($query->result() as $row)
@@ -58,7 +66,7 @@ class Store_model extends CI_Model
                     $category_desc=$this->get_category_description_by_category_id_and_language_id($row->categories_id, $language_id);
                     
                     $list[$i] = array( 'categories_id' => $row->categories_id,
-                                'categories_image' => $row->categories_image,
+                                'categories_image' => isset($row->categories_image)? $row->categories_image : "",
                                 'categories_name' =>isset($category_desc) ? $category_desc->categories_name : "Invalid",
                                 //'categories_desc' =>isset($category_desc) ? $category_desc->categories_description : "Invalid",
                     );
@@ -132,38 +140,54 @@ class Store_model extends CI_Model
 	 */
 	function list_products($categories_id,$language_id)
 	{
+            
+            
                 $products_list=$this->list_products_to_categories($categories_id); //get list of product id
 
                  if (sizeof($products_list)==0)
                     return $list;
                  
                 $p_list= array(); 
-                $i=0;
+                $i=0; $in_string="AND p.`products_id` IN (";
+                
                 foreach ($products_list as $row)
-                {
-                    //echo ($row['products_id'])."->";
-                    $p_list[$i] = $row['products_id'];
+                {                    
+                    //$p_list[$i] = $row['products_id'];
                     $i++;
-                }                 
+                    $in_string.="'".$row['products_id']."',";
+                }
+                $in_string.="'')";
                 
-                 $list=array(); $i=0;
+                /*SELECT p.products_id, p.products_image, `pd`.products_name, p.`products_sort_order` FROM (`products` p) , `products_description` pd 
+WHERE `products_status` =  1  AND p.`products_id` IN ('123', '125', '134', '136', '141', '142')  AND p.`products_id`=pd.`products_id`
+ORDER BY p.`products_sort_order` , pd.`products_name` ASC*/
                 
-                
-                
-                $this->db->where('products_status', 1);
-                
-                
-               
-                $this->db->where_in('products_id', $p_list);
+                $list=array(); $i=0;
+             
+              /*  $this->db->where('products_status', 1);             
+                $this->db->where_in('products_id', $p_list);                
                 $this->db->order_by('products_sort_order');
-            
-		$query = $this->db->get($this->tbl_products_name);
+                $this->db->from($this->tbl_products_name);*/
+                
+                $sql = "SELECT p.products_id, p.products_image, p.products_quantity, p.products_price, p.products_price_sorter,
+                    `pd`.products_name, p.`products_sort_order` FROM (`products` p) , `products_description` pd 
+WHERE `products_status` =  1 ".$in_string."  AND p.`products_id`=pd.`products_id`
+ORDER BY p.`products_sort_order` , pd.`products_name` ASC";
                
+                $query = $this->db->query($sql);
+                
+		///= $this->db->get();
+                
                 foreach ($query->result() as $row)
                 {
-                    $product_desc=$this->get_products_description_by_products_id_and_language_id($row->products_id, $language_id);
-                    $list[$i] = array( 'products_id' => $row->products_id,
-                                'products_image' => $row->products_image,
+                                        
+                    $product_desc=$this->get_products_description($row->products_id, $language_id);
+                    
+                    $products_image_medium=$this->getFullImageUrl($row->products_image);
+                    
+                    $list[$i] = array( 'categories_id' => $categories_id,
+                                'products_id' => $row->products_id,                                
+                                'products_image' => $products_image_medium,//$row->products_image,
                                 'products_quantity' => $row->products_quantity,
                                 'products_name' =>isset($product_desc) ? $product_desc->products_name : "Invalid",
                                 'products_price' => $row->products_price,
@@ -175,6 +199,26 @@ class Store_model extends CI_Model
 		return $list;
 	}
         
+        /*
+         * 
+         * 
+         */
+        function getFullImageUrl($products_image){
+            $products_image_extension = substr($products_image, strrpos($products_image, '.'));
+                    
+            $products_image_base = str_replace($products_image_extension, '', $products_image);
+            $products_image_medium = $products_image_base . IMAGE_SUFFIX_MEDIUM . $products_image_extension;
+            //$products_image_large = $products_image_base . IMAGE_SUFFIX_LARGE . $products_image_extension;
+
+            // check for a medium image else use small
+            if (!file_exists(DIR_WS_IMAGES . 'medium/' . $products_image_medium)) {
+                $products_image_medium = DIR_WS_IMAGES . $products_image;
+            } else {
+                $products_image_medium = DIR_WS_IMAGES . 'medium/' . $products_image_medium;
+            }
+            $products_image_medium=DIR_FS_CATALOG.$products_image_medium;
+            return $products_image_medium;
+        }
         /**
 	 * get products_description record by products_id & language_id
          * @param       int
