@@ -1,0 +1,118 @@
+1.	List categories
+List all categories of the zen-cart store without any parameter.
+Request
+Method	URL            
+GET	index.php/store/list_categories?parent_id=0&language_id=1
+
+
+Type	Params	Values
+GET	parent_id	int : parent category id 
+      ( 0: top level)
+GET	language_id 	int : language id ( 1 : English)
+
+
+Response
+Value	Response
+Format:
+	{
+ “categories” : ”array of categories”, 
+     “status”     : “status”
+}
+categories in details :
+ [{ "categories_id" : "2",
+    "categories_image" : "url", 
+    "categories_name" : “Electronic”
+ }]
+categories	success : array of collection, it’s size can be 0
+failure : null
+status	success : 0
+failure : -1
+
+2.	List products
+List all products under the category
+Request
+Method	URL            
+GET	index.php/store/ list_products?category_id=0&language_id=1
+
+
+Type	Params	Values
+GET	category_id	int : desired category id
+GET	language_id 	int : language id ( 1 : English)
+
+
+Response
+Value	Response
+Format:
+	{
+ “products” : ”array of products”, 
+     “status”     : “status”
+}
+products in details :
+ [{"products_id" : "156",
+"products_image" : "vapor-king-vkrebel-electronic-cigarette-starter-kit-black.png", 
+"products_quantity" : "943",
+"products_name" : "Vapor King Rebellion - Starter Kit - Black",
+"products_price" : "59.9500", 
+"products_price_sorter" : "59.9500"
+}]
+products	success : array of collection, it’s size can be 0
+failure : null
+status	success : 0
+failure : -1
+
+3.	List product attributes options
+List all products_options under the product
+Request
+Method	URL            
+GET	index.php/store/list_products_attributes_options?product_id=134&language_id=1
+
+
+Type	Params	Values
+GET	product_id	int : desired product id
+GET	language_id 	int : language id ( 1 : English)
+
+
+Response
+Value	Response
+Format:
+	{
+ “options” : ”array of product options                                                               values”, 
+     “status”     : “status”
+}
+options in details :
+ [{"options_id" : "698",
+   "options_name " :  Storm Charger "
+}]
+options	success : array of collection, it’s size can be 0
+failure : null
+status	success : 0
+failure : -1
+
+4.	List product_attributes_options_values
+List all products_options_values under the product & options
+Request
+Method	URL            
+GET	index.php/store/list_products_attributes_options_values?product_id=134&language_id=1&option_id=87
+
+
+Type	Params	Values
+GET	product_id	int : desired product id
+GET	option_id	int : desired product_option id
+GET	language_id 	int : language id ( 1 : English)
+
+
+Response
+Value	Response
+Format:
+	{
+ “options_values” : ”array of product options”, 
+     “status”     : “status”
+}
+options_values in details :
+ [{"options_values_id" : "122",
+   "options_values_name" : "Storm Clearomizers - Clear"
+}]
+options_values	success : array of collection, it’s size can be 0
+failure : null
+status	success : 0
+failure : -1

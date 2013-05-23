@@ -46,8 +46,7 @@ class Store extends CI_Controller
          * @param language_id
          * @return	array
          */
-	function list_products() {
-                        
+	function list_products() {                        
             
            if (!isset($_GET['category_id'])){
                 $result['status'] = $this->config->item('fail');   
@@ -63,8 +62,60 @@ class Store extends CI_Controller
                                               
             echo json_encode($result);  
 	}
+        
+        /*
+         * list products_attributes_options
+         * @param	int
+	 * @return	array
+         */
+	function list_products_attributes_options() {                        
+            
+           if (!isset($_GET['product_id'])){
+                $result['status'] = $this->config->item('fail');   
+                $result['error'] = $this->config->item('invalid_params');
+                echo json_encode($result);  
+                return;
+           }
+           
+           $product_id=$_GET['product_id'];
+           $language_id=isset($_GET['language_id']) ? $_GET['language_id'] : 1; //default 1: English
+                
+            $result['options']= $this->store_model->list_products_attributes_options($product_id,$language_id);
+            $result['status'] = $this->config->item('success');
+                                              
+            echo json_encode($result);  
+	}
 	
-	
+	/*
+         * list products_attributes_options
+         * @param	int
+	 * @return	array
+         */
+	function list_products_attributes_options_values() {                        
+            
+           if (!isset($_GET['product_id'])){
+                $result['status'] = $this->config->item('fail');   
+                $result['error'] = $this->config->item('invalid_params');
+                echo json_encode($result);  
+                return;
+           }
+           
+            if (!isset($_GET['option_id'])){
+                $result['status'] = $this->config->item('fail');   
+                $result['error'] = $this->config->item('invalid_params');
+                echo json_encode($result);  
+                return;
+           }
+           
+           $product_id=$_GET['product_id'];
+           $option_id=$_GET['option_id'];
+           $language_id=isset($_GET['language_id']) ? $_GET['language_id'] : 1; //default 1: English
+                
+           $result['options_values']= $this->store_model->list_products_attributes_options_values($product_id,$option_id,$language_id);
+            $result['status'] = $this->config->item('success');
+                                              
+            echo json_encode($result);  
+	}
 	
 }
 

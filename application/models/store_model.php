@@ -19,6 +19,9 @@ class Store_model extends CI_Model
         private $tbl_product_to_category_name="products_to_categories";
         private $tbl_products_name="products";
         private $tbl_products_description_name="products_description";
+        private $tbl_products_attributes_name="products_attributes";
+        private $tbl_products_options_name="products_options";
+        private $tbl_products_options_values_name="products_options_values";
 
 	function __construct()
 	{
@@ -178,7 +181,7 @@ class Store_model extends CI_Model
 	 * @param	int
 	 * @return	object
 	 */
-	function get_products_description_by_products_id_and_language_id($products_id,$language_id)
+	function get_products_description($products_id,$language_id)
 	{
 		$this->db->where('products_id', $products_id);
                 $this->db->where('language_id', $language_id);
@@ -189,6 +192,108 @@ class Store_model extends CI_Model
 		return NULL;
 	}
         
+        
+        /**
+	 * List product_attributes records sorted by options_id with array of option_values_id
+	 * status=0 (enabled)
+         * by products_options_sort_order
+	 * @param	int
+	 * @return	array
+	 */
+	function list_products_attributes_options($product_id,$language_id)
+	{
+            //SELECT DISTINCT (options_id)  FROM products_attributes WHERE products_id=156 ORDER BY products_options_sort_order
+            $this->db->where('attributes_status', 0); // 0 : available               
+            $this->db->where('products_id', $product_id);
+            $this->db->select('options_id');
+            $this->db->distinct();
+            
+            $this->db->order_by('products_options_sort_order');
+
+            $query = $this->db->get($this->tbl_products_attributes_name);
+                            
+            $list=array(); $i=0;
+                                    
+            foreach ($query->result() as $row)
+            {                
+                
+               $option=$this->get_products_option($row->options_id, $language_id);
+               $list[$i] = array( 
+                                'options_id' => $row->options_id,
+                                'options_name' =>isset($option) ? $option->products_options_name : "Invalid",                                
+                    );
+                $i++;
+            }
+           
+            return $list;
+	}
+        
+        /**
+	 * List product_attributes records sorted by options_id with array of option_values_id
+	 * status=0 (enabled)
+         * by products_options_sort_order
+	 * @param	int
+	 * @return	array
+	 */
+	function list_products_attributes_options_values($product_id,$option_id,$language_id)
+	{
+            //SELECT DISTINCT (options_id)  FROM products_attributes WHERE products_id=156 ORDER BY products_options_sort_order
+            
+            $this->db->where('products_id', $product_id);
+            $this->db->where('options_id', $option_id);                        
+            
+            $this->db->order_by('products_options_sort_order');
+
+            $query = $this->db->get($this->tbl_products_attributes_name);
+                            
+            $list=array(); $i=0;
+                                    
+            foreach ($query->result() as $row)
+            {         
+                $option_value=$this->get_products_options_value($row->options_values_id, $language_id);
+                $list[$i] = array( 
+                                'options_values_id' => $row->options_values_id,
+                                'options_values_name' =>isset($option_value) ? $option_value->products_options_values_name : "Invalid",                                
+                    );
+                $i++;
+            }
+           
+            return $list;
+	}
+        
+         /**
+	 * get products_description record by products_id & language_id
+         * @param       int
+	 * @param	int
+	 * @return	object
+	 */
+	function get_products_options_value($products_options_values_id,$language_id)
+	{
+		$this->db->where('products_options_values_id', $products_options_values_id);
+                $this->db->where('language_id', $language_id);
+                
+		$query = $this->db->get($this->tbl_products_options_values_name);
+
+                if ($query->num_rows() == 1) return $query->row();
+		return NULL;
+	}
+        
+         /**
+	 * get products_description record by products_id & language_id
+         * @param       int
+	 * @param	int
+	 * @return	object
+	 */
+	function get_products_option($products_options_id,$language_id)
+	{
+		$this->db->where('products_options_id', $products_options_id);
+                $this->db->where('language_id', $language_id);
+                
+		$query = $this->db->get($this->tbl_products_options_name);
+
+                if ($query->num_rows() == 1) return $query->row();
+		return NULL;
+	}
 }
 
 /* End of file users.php */
