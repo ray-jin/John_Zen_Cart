@@ -1,0 +1,66 @@
+<form action="http://localhost:1300/John_zen_cart/index.php/store/checkout_products" method="post">
+    <table border="!" width="900" cellspacing="0" cellpadding="0" >
+     <tbody>
+         <tr>
+            <th scope="col" id="scQuantityHeading">Qty.</th>
+            <th scope="col" id="scProductsHeading">Item Name</th>
+            <th scope="col" id="scUnitHeading">Unit</th>
+            <th scope="col" id="scTotalHeading">Total</th>
+            
+        </tr>
+         <!-- Loop through all products /-->
+        <tr >
+            <td>
+                <input type="text" name="quantity[]" value="20"/> <!-- For product value 5 /-->
+            </td>
+
+            <td >
+
+                <br >
+                <span> <a href="">Electronic Cigarettes Inc. Duo Pro Express Starter Kit</a></span><br/>
+                <span>productid:</span><input type="text" name="product_id[]" value="5"/>
+                <br/>
+                <div >
+                    <ul>
+                        <li>
+                            Duo Pro Battery&nbsp;-&nbsp;DuoPro Battery - White - Automatic Battery : <br/>
+                            option_value_id : <input type="text" name="pid5[]" value="238"> 
+                        </li>
+                        <li>
+                            Duo Pro 5pk Cartridge Type&nbsp;-&nbsp;DuoPro Carts - Tobacco Low - 6mg : <br/>
+                            option_value_id : <input type="text" name="pid5[]" value="131"> 
+                        </li>
+                    </ul>
+                </div>       
+            </td>
+            <td >$44.95</td>
+            <td >$899.00</td>
+     </tr>
+     <tr >
+       <td><input type="text" name="quantity[]" value="5"/></td>
+       <td >
+            <br >
+                <span> <a href="">Storm Clearomizer Replacement Coil </a></span><br/>
+                <span>productid:</span><input type="text" name="product_id[]" value="141"/>
+                <br/>
+                <div >
+                    <ul>
+                        <li>
+                           Storm Clearomizer Coil - Storm Clearomizer Coil Replacement : <br/>
+                            option_value_id : <input type="text" name="pid141[]" value="743"> 
+                        </li>
+                    </ul>
+                </div> 
+        </td>
+
+       <td >$3.95</td>
+       <td >$19.75</td>
+
+     </tr>
+       <!-- Finished loop through all products /-->
+      </tbody>
+    </table>
+
+<input type="submit" value="Send">
+
+</form>

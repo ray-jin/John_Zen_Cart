@@ -13,8 +13,7 @@ class Store extends CI_Controller
 		$this->load->database();
                 $this->load->library('session');
                 $this->load->model('store_model');
-                                
-                
+                                                
 	}
 	
 	function index()
@@ -153,6 +152,44 @@ class Store extends CI_Controller
             echo json_encode($result);  
 	}
 	
+        /*
+         * 
+         * @param	array of array
+         * @param       reference checkout_products.html
+	 * @return	array
+         */
+	function checkout_products() {
+            
+            
+            $product_ids=$_REQUEST['product_id'];
+            $quantities=$_REQUEST['quantity'];
+             
+             
+            if (sizeof($product_ids)!=sizeof($quantities) || !isset($_REQUEST['product_id']) || !isset($_REQUEST['quantity']) ){
+                $result['status'] = $this->config->item('fail');   
+                $result['error'] = $this->config->item('invalid_params');
+                echo json_encode($result);  
+                return;
+            }
+                        
+            $products=array(); $i=0;
+            foreach ($product_ids as $product_id) {
+                $option_value_ids=$_REQUEST['pid'.$product_id];
+                
+                $products[$i]=array(
+                    'product_id' => $product_id,
+                    'quantity' => $quantities[$i],
+                    'option_value_ids' => $option_value_ids,
+                    );
+                
+                
+                $i++;
+            }
+            
+            echo json_encode($products);
+       
+           
+	}
 }
 
 /* End of file welcome.php */
