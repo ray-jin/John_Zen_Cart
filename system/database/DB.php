@@ -26,6 +26,7 @@
  */
 function &DB($params = '', $active_record_override = NULL)
 {
+    
 	// Load the DB config file if a DSN string wasn't passed
 	if (is_string($params) AND strpos($params, '://') === FALSE)
 	{
@@ -52,7 +53,9 @@ function &DB($params = '', $active_record_override = NULL)
 
 		if ( ! isset($active_group) OR ! isset($db[$active_group]))
 		{
+                    
 			show_error('You have specified an invalid database connection group.');
+                        
 		}
 
 		$params = $db[$active_group];
@@ -152,7 +155,7 @@ function &DB($params = '', $active_record_override = NULL)
 	{
 		$DB->query('SET SESSION sql_mode="STRICT_ALL_TABLES"');
 	}
-
+        
 	return $DB;
 }
 

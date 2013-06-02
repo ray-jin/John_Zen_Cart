@@ -1,5 +1,7 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
+//include_once('application/controllers/functions/functions_general.php');
+include_once 'application/controllers/modules/payment/authorizenet_aim.php';
 
 class Store extends CI_Controller
 {
@@ -11,8 +13,12 @@ class Store extends CI_Controller
 
 		//$this->load->library('security');
 		$this->load->database();
-                $this->load->library('session');
+                $ci =& get_instance();
+                $db=$ci->db;
+                $GLOBALS ['db']=$db;
+  
                 $this->load->model('store_model');
+               
                                                 
 	}
 	
@@ -159,10 +165,26 @@ class Store extends CI_Controller
 	 * @return	array
          */
 	function checkout_products() {
-              
+           
+            if (!isset($_REQUEST['quantity']) || !isset($_REQUEST['product_id']) || !isset($_REQUEST['product_name'])) {
+                $result['status'] = $this->config->item('fail');   
+                $result['error'] = $this->config->item('invalid_params');
+                echo json_encode($result);  
+                return;
+            }
+            
+            if ( !isset($_REQUEST['authorizenet_aim_cc_owner'])|| !isset($_REQUEST['authorizenet_aim_cc_number'])
+               || !isset($_REQUEST['authorizenet_aim_cc_expires_month'])|| !isset($_REQUEST['authorizenet_aim_cc_expires_year'])
+               || !isset($_REQUEST['authorizenet_aim_cc_cvv'])) {
+                $result['status'] = $this->config->item('fail');   
+                $result['error'] = $this->config->item('invalid_params');
+                echo json_encode($result);  
+                return;
+            }
+            
             $product_ids=$_REQUEST['product_id'];
+            $product_names=$_REQUEST['product_name'];
             $quantities=$_REQUEST['quantity'];
-            $language_id=$_REQUEST['language_id'];
              
             if (sizeof($product_ids)!=sizeof($quantities) || !isset($_REQUEST['product_id']) 
                     || !isset($_REQUEST['quantity']) || !isset($_REQUEST['language_id']) 
@@ -174,10 +196,17 @@ class Store extends CI_Controller
                 return;
             }
             
+            $this->store_model->defineVariables();
+            
+            $payment=$_REQUEST['payment_method'];
+            $GLOBALS ['currency']=DEFAULT_CURRENCY;
+            
+            $GLOBALS['payment']=$payment;
+            
             $order_total=$_REQUEST['order_total'];
             $order_tax=$_REQUEST['order_tax'];
             $payment_method=$_REQUEST['payment_method'];
-            
+            $language_id=$_REQUEST['language_id'];
             
             $products=array(); $i=0;
             foreach ($product_ids as $product_id) {
@@ -186,6 +215,7 @@ class Store extends CI_Controller
                 
                 $products[$i]=array(
                     'product_id' => $product_id,
+                    'product_name' => $product_names[$i],
                     'quantity' => $quantities[$i],
                     'option_value_ids' => $option_value_ids,
                     'option_ids' => $option_ids,
@@ -194,11 +224,50 @@ class Store extends CI_Controller
                 $i++;
             }
             
+            $store_1_walk_in_customer=$this->store_model->get_customer_by_id(STORE_1_WAK_IN_CUSTOMER_ID);
+            $address_book=$this->store_model->get_address_book_by_id($store_1_walk_in_customer->customers_default_address_id);
+            $new_order_id="";
+            $payment_info=array();
+            
+            //Payment pre_check & before process
+            if ($payment=="Credit Card"){                 
+                $aim=new authorizenet_aim();
+                $aim->cc_card_owner=$_REQUEST['authorizenet_aim_cc_owner'];
+                if ($aim->process($products,$store_1_walk_in_customer,$address_book ,$order_total)==false){
+                    $result['status'] = $this->config->item('fail');
+                    $result['error'] = $aim->error;                    
+                     echo json_encode($result);
+                //    return;
+                }
+                $new_order_id=$aim->new_order_id;
+                                       
+                $payment_info=$aim->order->info;                
+            }
+            else if ($payment=="moneyorder"){
+                //$moneyorder=new moneyorder();
+                $new_order_id=$this->store_model->get_new_order_id();
+                $payment_info['cc_type']="";
+                $payment_info['cc_owner']="";
+                $payment_info['cc_number']="";
+                $payment_info['cc_expires']="";
+                $payment_info['cc_cvv']="";
+            }
+            else{
+                $result['status'] = $this->config->item('fail');   
+                $result['error'] = "Payment method is not specified.";
+                 echo json_encode($result);
+                return;
+            }
+            
+          
             $result=array();
             
             $ip_address=$_SERVER['REMOTE_ADDR'];
             //add record to store_1_sales_orders table
-            $order_id=$this->store_model->create_in_store_1_sales_order($order_total,$order_tax,$payment_method,$ip_address);
+            
+	
+            $order_id=$this->store_model->create_in_store_1_sales_order($new_order_id,$order_total,$payment_info,
+                    $order_tax,$ip_address,$payment_method);
             if (!$order_id || $order_id==0){
                 $result['status']=$this->config->item('fail');
                 $result['error']="Order is not created";
@@ -234,7 +303,7 @@ class Store extends CI_Controller
             }
             
             //add to orders_status_history table
-            $r_value=$this->store_model->create_status_history($order_id);
+            $r_value=$this->store_model->create_status_history($order_id,PROCESSING_ORDER_STATUS_ID);
             if (!$r_value || $r_value==0){
                 $result['status']=$this->config->item('fail');
                 $result['error']="Order Status History is not created";
@@ -245,11 +314,29 @@ class Store extends CI_Controller
             //deduct option values from Store #1 option value tables
             if ($this->store_model->update_option_values($products,$language_id)){
                                 
-                //add one order record in main order table under the status of "In Store Sales #1"
-                  
+                //add one order record in main order table under the status of "In Store Sales #1"                  
                 $result['status']=$this->config->item('success');
+            }
+            
+             /*if ($payment=="Credit Card"){                 
+                $aim->order_status=In_Store_Sales_1_ORDER_STATUS_ID;
+                if (!$aim->after_process()){
+                    $result['status'] = $this->config->item('fail');
+                    $result['error'] ="Afer process failed";
+                     echo json_encode($result);
+                //    return;
+                }
                 
             }
+            else if ($payment=="moneyorder"){
+                //do nothing
+            }
+            else{
+                $result['status'] = $this->config->item('fail');   
+                $result['error'] = "Payment method is not specified.";
+                echo json_encode($result);
+                return;
+            }*/
             
             echo json_encode($result);
    

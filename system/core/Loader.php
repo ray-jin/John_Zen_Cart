@@ -344,6 +344,7 @@ class CI_Loader {
 
 		// Load the DB class
 		$CI->db =& DB($params, $active_record);
+               
 	}
 
 	// --------------------------------------------------------------------
