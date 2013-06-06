@@ -110,15 +110,17 @@ class Store extends CI_Controller
            $language_id=isset($_REQUEST['language_id']) ? $_REQUEST['language_id'] : 1; //default 1: English
                 
            $options_list=$this->store_model->list_products_attributes_options($product_id,$language_id);
-           $i=0; $list=array();
+           $i=0; $list=array();           
            foreach ($options_list as $row)
            {                
-            
-              $list[$i]['options_id']=$row['options_id'];
-              $list[$i]['options_name']=$row['options_name'];
               $options_values_list=$this->store_model->list_products_attributes_options_values($product_id,$row['options_id'],$language_id);
-              $list[$i]['values_list']=$options_values_list;
-                $i++;
+              if (sizeof($options_values_list)>0){
+                  $list[$i]['options_id']=$row['options_id'];
+                  $list[$i]['options_name']=$row['options_name'];
+                  $list[$i]['values_list']=$options_values_list;
+                  $i++;
+              }
+              
            }
            //print_r($list);
            $result['attributes']=$list;
@@ -237,7 +239,7 @@ class Store extends CI_Controller
                     $result['status'] = $this->config->item('fail');
                     $result['error'] = $aim->error;                    
                      echo json_encode($result);
-                //    return;
+                     return;
                 }
                 $new_order_id=$aim->new_order_id;
                                        

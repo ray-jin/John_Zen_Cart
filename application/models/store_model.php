@@ -292,7 +292,7 @@ ORDER BY p.`products_sort_order` , pd.`products_name` ASC";
 	{
             //SELECT DISTINCT (options_id)  FROM products_attributes WHERE products_id=156 ORDER BY products_options_sort_order
             
-            $this->db->where('products_id', $product_id);
+          $this->db->where('products_id', $product_id);
             $this->db->where('options_id', $option_id);                        
             
             $this->db->order_by('products_options_sort_order');
@@ -304,11 +304,13 @@ ORDER BY p.`products_sort_order` , pd.`products_name` ASC";
             foreach ($query->result() as $row)
             {         
                 $option_value=$this->get_products_options_value($row->options_values_id, $language_id);
-                $list[$i] = array( 
+                if ($option_value->products_options_values_quantity>0){
+                    $list[$i] = array( 
                                 'options_values_id' => $row->options_values_id,
                                 'options_values_name' =>isset($option_value) ? $option_value->products_options_values_name : "Invalid",                                
                     );
-                $i++;
+                    $i++;
+                }
             }
            
             return $list;
@@ -492,11 +494,23 @@ ORDER BY p.`products_sort_order` , pd.`products_name` ASC";
          * @param       customer_id : registered customer id	 
 	 * @return	order object
 	 */
-	function create_in_store_1_sales_order($new_order_id,$order_total, $payment_info,$order_tax, $ip_address,$payment_method,$payment_module_code="cc",
+	function create_in_store_1_sales_order($new_order_id,$order_total, $payment_info,$order_tax,
+                $ip_address,$payment_method,$payment_module_code="cc",
                 $shipping_method="FREE SHIPPING! (Free Shipping Only)",
                 $shipping_module_code="freeshipper")
 	{
-            
+                          
+            if (!$payment_info['cc_type'])
+                $payment_info['cc_type']="";
+            if (!$payment_info['cc_owner'])
+                $payment_info['cc_owner']="";
+            if (!$payment_info['cc_number'])
+                $payment_info['cc_number']="";
+            if (!$payment_info['cc_expires'])
+                $payment_info['cc_expires']="";
+             if (!$payment_info['cc_cvv'])
+                $payment_info['cc_cvv']="";
+                
             if (!$customer=$this->get_customer_by_id(STORE_1_WAK_IN_CUSTOMER_ID))
                 return false;
             
@@ -754,16 +768,8 @@ ORDER BY p.`products_sort_order` , pd.`products_name` ASC";
             define('TABLE_CUSTOMERS_BASKET_ATTRIBUTES', DB_PREFIX . 'customers_basket_attributes');
             define('TABLE_CUSTOMERS_INFO', DB_PREFIX . 'customers_info');
             define('TABLE_DB_CACHE', DB_PREFIX . 'db_cache');
-            define('TABLE_EMAIL_ARCHIVE', DB_PREFIX . 'email_archive');
-            define('TABLE_EZPAGES', DB_PREFIX . 'ezpages');
-            define('TABLE_FEATURED', DB_PREFIX . 'featured');
-            define('TABLE_FILES_UPLOADED', DB_PREFIX . 'files_uploaded');
-            define('TABLE_GROUP_PRICING', DB_PREFIX . 'group_pricing');
-            define('TABLE_GET_TERMS_TO_FILTER', DB_PREFIX . 'get_terms_to_filter');
+            define('TABLE_EMAIL_ARCHIVE', DB_PREFIX . 'email_archive');            
             define('TABLE_LANGUAGES', DB_PREFIX . 'languages');
-            define('TABLE_LAYOUT_BOXES', DB_PREFIX . 'layout_boxes');
-            define('TABLE_MANUFACTURERS', DB_PREFIX . 'manufacturers');
-            define('TABLE_MANUFACTURERS_INFO', DB_PREFIX . 'manufacturers_info');
             define('TABLE_META_TAGS_PRODUCTS_DESCRIPTION', DB_PREFIX . 'meta_tags_products_description');
             define('TABLE_METATAGS_CATEGORIES_DESCRIPTION', DB_PREFIX . 'meta_tags_categories_description');
             define('TABLE_NEWSLETTERS', DB_PREFIX . 'newsletters');
@@ -775,10 +781,6 @@ ORDER BY p.`products_sort_order` , pd.`products_name` ASC";
             define('TABLE_ORDERS_STATUS_HISTORY', DB_PREFIX . 'orders_status_history');
             define('TABLE_ORDERS_TYPE', DB_PREFIX . 'orders_type');
             define('TABLE_ORDERS_TOTAL', DB_PREFIX . 'orders_total');
-            define('TABLE_PAYPAL', DB_PREFIX . 'paypal');
-            define('TABLE_PAYPAL_SESSION', DB_PREFIX . 'paypal_session');
-            define('TABLE_PAYPAL_PAYMENT_STATUS', DB_PREFIX . 'paypal_payment_status');
-            define('TABLE_PAYPAL_PAYMENT_STATUS_HISTORY', DB_PREFIX . 'paypal_payment_status_history');
             define('TABLE_PRODUCTS', DB_PREFIX . 'products');
             define('TABLE_PRODUCT_TYPES', DB_PREFIX . 'product_types');
             define('TABLE_PRODUCT_TYPE_LAYOUT', DB_PREFIX . 'product_type_layout');
@@ -793,26 +795,11 @@ ORDER BY p.`products_sort_order` , pd.`products_name` ASC";
             define('TABLE_PRODUCTS_OPTIONS_VALUES_TO_PRODUCTS_OPTIONS', DB_PREFIX . 'products_options_values_to_products_options');
             define('TABLE_PRODUCTS_OPTIONS_TYPES', DB_PREFIX . 'products_options_types');
             define('TABLE_PRODUCTS_TO_CATEGORIES', DB_PREFIX . 'products_to_categories');
-            define('TABLE_PROJECT_VERSION', DB_PREFIX . 'project_version');
-            define('TABLE_PROJECT_VERSION_HISTORY', DB_PREFIX . 'project_version_history');
-            define('TABLE_QUERY_BUILDER', DB_PREFIX . 'query_builder');
-            define('TABLE_REVIEWS', DB_PREFIX . 'reviews');
-            define('TABLE_REVIEWS_DESCRIPTION', DB_PREFIX . 'reviews_description');
-            define('TABLE_SALEMAKER_SALES', DB_PREFIX . 'salemaker_sales');
-            define('TABLE_SESSIONS', DB_PREFIX . 'sessions');
-            define('TABLE_SPECIALS', DB_PREFIX . 'specials');
-            define('TABLE_TEMPLATE_SELECT', DB_PREFIX . 'template_select');
-            define('TABLE_TAX_CLASS', DB_PREFIX . 'tax_class');
-            define('TABLE_TAX_RATES', DB_PREFIX . 'tax_rates');
-            define('TABLE_GEO_ZONES', DB_PREFIX . 'geo_zones');
-            define('TABLE_ZONES_TO_GEO_ZONES', DB_PREFIX . 'zones_to_geo_zones');
-            define('TABLE_UPGRADE_EXCEPTIONS', DB_PREFIX . 'upgrade_exceptions');
-            define('TABLE_WISHLIST', DB_PREFIX . 'customers_wishlist');
-            define('TABLE_WHOS_ONLINE', DB_PREFIX . 'whos_online');
             define('TABLE_ZONES', DB_PREFIX . 'zones');
             define('ORDER_PREFIX', 'ECI');
             define('PROCESSING_ORDER_STATUS_ID', 1);
             define('In_Store_Sales_1_ORDER_STATUS_ID', 43);
+            define('In_Store_Stock_1_ORDER_STATUS_ID', 44);
             define('STORE_1_WAK_IN_CUSTOMER_ID', 38163);
             define('FILENAME_DEFAULT', 'index');
             define('EMAIL_DISCLAIMER', 'This email address was given to us by you or by one of our customers. If you feel that you have received this email in error, please send an email to %s ');
@@ -833,6 +820,7 @@ ORDER BY p.`products_sort_order` , pd.`products_name` ASC";
                 "CURRENCIES_TRANSLATIONS",
                 "ADMIN_EXTRA_EMAIL_FORMAT",
                 "CC_ENABLED",
+                "Store_1_Restock_Days",
             );
             foreach ($configuration as $cfgKey){
                     $this->db->like('configuration_key', $cfgKey); // 0 : available
@@ -950,6 +938,41 @@ ORDER BY p.`products_sort_order` , pd.`products_name` ASC";
             define('DIR_WS_MODULES', DIR_WS_INCLUDES . 'modules/');
             define('DIR_WS_LANGUAGES', DIR_WS_INCLUDES . 'languages/');
             define('DIR_WS_CATALOG_LANGUAGES', HTTP_CATALOG_SERVER . DIR_WS_CATALOG . 'includes/languages/');
+            
+        }
+        
+         /**
+	 * get products_description record by products_id & language_id
+         * @param       int
+	 * @param	int
+	 * @return	object
+	 */
+	function list_all_products_options_value($language_id)
+	{		
+                $this->db->where('language_id', $language_id);
+		$query = $this->db->get($this->tbl_products_options_values_name);
+		return $query->result();
+	}
+        
+        
+        //travels all option values and if current quantity < (lead time + x days) * daily average, create re-stock order on main order table
+        function create_restock_orders($language_id,$ip_address){
+            
+            $options_values=$this->list_all_products_options_value($language_id);
+            foreach ($options_values as $option_value){
+                $quantity=$option_value->products_options_values_quantity;
+                $leadtime=$option_value->pov_leadtime;
+                $daily_average=$option_value->pov_daily_average;
+                if ($quantity < (STORE_1_RESTOCK_DAYS + $leadtime) * $daily_average){
+                    $new_order_id=$this->get_new_order_id();
+                    /*create_in_store_1_sales_order($new_order_id,$order_total, $payment_info,$order_tax,
+                $ip_address,$payment_method,$payment_module_code="cc",
+                $shipping_method="FREE SHIPPING! (Free Shipping Only)",
+                $shipping_module_code="freeshipper")
+	
+                    $this->create_in_store_1_sales_order($new_order_id, 0, new array(), 0, $ip_address, "Re-order")*/
+                }
+            }
             
         }
 }

@@ -82,13 +82,13 @@
        
        <tr>
            <td >
-              Order Total : <input type="text" name="order_total" value="100"/>
+              Order Total : <input type="text" name="order_total" value="0.1"/>
            </td>
            <td >
               Order Tax : <input type="text" name="order_tax" value="0.0"/>
            </td>
            <td >
-              Payment Method : <input type="text" name="payment_method" value="moneyorder"/>
+              Payment Method : <input type="text" name="payment_method" value="Credit Card"/>
            </td>
        </tr> 
        
@@ -100,16 +100,17 @@
 
         <p class="important">Please select a payment method for this order.</p>
 
-        <input type="radio" name="payment" value="authorizenet_aim" checked="checked" id="pmt-authorizenet_aim"><label for="pmt-authorizenet_aim" class="radioButtonLabel">Credit Card</label>
+        <input type="radio" name="payment" value="authorizenet_aim" checked="checked" id="pmt-authorizenet_aim">
+        <label for="pmt-authorizenet_aim" class="radioButtonLabel">Credit Card</label>
 
         <br class="clearBoth">
 
 
         <div class="ccinfo">
         <label for="authorizenet_aim-cc-owner" class="inputLabelPayment">Cardholder Name:</label>
-            <input type="text" name="authorizenet_aim_cc_owner" value="ray jin" id="authorizenet_aim-cc-owner" ><br class="clearBoth">
+            <input type="text" name="authorizenet_aim_cc_owner" value="John J Burns III" id="authorizenet_aim-cc-owner" ><br class="clearBoth">
         <label for="authorizenet_aim-cc-number" class="inputLabelPayment">Credit Card Number:</label>
-        <input type="text" name="authorizenet_aim_cc_number" id="authorizenet_aim-cc-number" value="4111 1111 1111 1111"><br class="clearBoth">
+        <input type="text" name="authorizenet_aim_cc_number" id="authorizenet_aim-cc-number" value="5581390001015206"><br class="clearBoth">
         <label for="authorizenet_aim-cc-expires-month" class="inputLabelPayment">Expiry Date:</label>
         <select name="authorizenet_aim_cc_expires_month" id="authorizenet_aim-cc-expires-month" onfocus="methodSelect('pmt-authorizenet_aim')">
             <option value="01">January - (01)</option>
@@ -141,7 +142,7 @@
         <br class="clearBoth">
         <label for="authorizenet_aim-cc-cvv" class="inputLabelPayment">CVV Number:</label>
         <input type="text" name="authorizenet_aim_cc_cvv" size="4"  maxlength="4" id="authorizenet_aim-cc-cvv"
-            onfocus="methodSelect('pmt-authorizenet_aim')" autocomplete="off" value="123"> 
+            onfocus="methodSelect('pmt-authorizenet_aim')" autocomplete="off" value="402"> 
             <a href="javascript:popupWindow('http://localhost:1300/john/index.php?main_page=popup_cvv_help')">What's this?</a><br class="clearBoth">
         </div>
         <br class="clearBoth">

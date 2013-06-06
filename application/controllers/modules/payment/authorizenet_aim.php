@@ -83,6 +83,8 @@ class authorizenet_aim extends base {
   public $cc_expiry_month ;
   public $cc_expiry_year ;
   public $cc_card_owner;
+  public $cc_cvv;
+  
   public $new_order_id;
   public $order_status;
   var $order; //order object
@@ -153,6 +155,7 @@ class authorizenet_aim extends base {
     $this->cc_card_number = $cc_validation->cc_number;
     $this->cc_expiry_month = $cc_validation->cc_expiry_month;
     $this->cc_expiry_year = $cc_validation->cc_expiry_year;
+    $this->cc_cvv=$_POST['authorizenet_aim_cc_cvv'];
     return 1;
   }
   /**
@@ -196,11 +199,15 @@ class authorizenet_aim extends base {
     
     $this->order->info['cc_type']    = $this->cc_card_type;
     $this->order->info['cc_owner']   = $this->cc_card_owner;
-    $this->order->info['cc_number']  = str_pad(substr($this->cc_card_number, -4), strlen($this->cc_card_number), "X", STR_PAD_LEFT);
+    $this->order->info['cc_number'] = $this->cc_card_number;
     $this->order->info['cc_expires'] = '';  // $_POST['cc_expires'];
-    $this->order->info['cc_cvv']     = '***'; //$_POST['cc_cvv'];
+    $this->order->info['cc_expires'] =$this->cc_expiry_month . substr($this->cc_expiry_year, -2);            
+    //$this->order->info['cc_cvv']     = '***'; //$_POST['cc_cvv'];
+    $this->order->info['cc_cvv']     =$this->cc_cvv;
     $this->order->info['shipping_cost']=0;
     $this->order->info['tax']=0;
+    
+
     
     //$sessID = zen_session_id();
     $sessID=session_id();
@@ -242,7 +249,7 @@ class authorizenet_aim extends base {
       
       
     // Populate an array that contains all of the data to be sent to Authorize.net
-    
+   
     $submit_data = array(
                          'x_login' => trim(MODULE_PAYMENT_AUTHORIZENET_AIM_LOGIN),
                          'x_tran_key' => trim(MODULE_PAYMENT_AUTHORIZENET_AIM_TXNKEY),
@@ -451,13 +458,13 @@ class authorizenet_aim extends base {
     $this->reportable_submit_data = $submit_data;
     $this->reportable_submit_data['x_login'] = '*******';
     $this->reportable_submit_data['x_tran_key'] = '*******';
-    if (isset($this->reportable_submit_data['x_card_num'])) $this->reportable_submit_data['x_card_num'] = str_repeat('X', strlen($this->reportable_submit_data['x_card_num'] - 4)) . substr($this->reportable_submit_data['x_card_num'], -4);
+    if (isset($this->reportable_submit_data['x_card_num'])) 
+        $this->reportable_submit_data['x_card_num'] = str_repeat('X', strlen($this->reportable_submit_data['x_card_num'] - 4)) . substr($this->reportable_submit_data['x_card_num'], -4);
     if (isset($this->reportable_submit_data['x_card_code'])) $this->reportable_submit_data['x_card_code'] = '****';
     $this->reportable_submit_data['url'] = $url;
-
-
+   
     // Post order info data to Authorize.net via CURL - Requires that PHP has CURL support installed
-
+    
     // Send CURL communication
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
