@@ -1,4 +1,4 @@
-1.	List categories
+﻿1.	List categories
 List all categories of the zen-cart store without any parameter.
 Request
 Method	URL            
@@ -118,6 +118,7 @@ status	success : 0
 failure : -1
 5.	List product_attributes
 List all products with options & options_values under the product
+displays only whose option value quantity is greater than 0.
 Request
 Method	URL            
 GET	index.php/store/list_products_attributes?product_id=134&language_id=1
@@ -126,7 +127,6 @@ GET	index.php/store/list_products_attributes?product_id=134&language_id=1
 Type	Params	Values
 GET	product_id	int : desired product id
 GET	language_id 	int : language id ( 1 : English)
-
 
 Response
 Value	Response
@@ -150,3 +150,44 @@ attributes	success : array of collection, it’s size can be 0
 failure : null
 status	success : 0
 failure : -1
+
+
+6.	Checkout Products
+Checkout products:
+Sample Frontend File: checkout_products.html
+
+1.	add to orders table
+2.	add to orders_products table
+3.	add to orders_products_attributes table
+4.	add to orders_total table
+5.	add to orders_status_history table
+6.	deduct product option values from products_options_values_store_1
+Request
+
+Method	URL            
+POST	/index.php/store/checkout_products
+
+
+Type	Params	Values
+POST	product_id	array : array of product ids
+POST	quantity	array : array of product quantities
+POST	language_id	int : language id 
+POST	order_total	flaot : total value
+POST	order_tax	float : tax (usually 0)
+POST	payment_method	string : “cash” or “credit card”
+POST	pid_option[]	array : array of product_option for product
+POST	pid[]	array : array of product_option_values for product
+
+Response
+
+Value	Response
+Format:
+	{
+    "status": “status”, “error” : ”error”
+}
+status	 success : 1
+ failure : 0
+error:	 success : null or empty string
+ failure : error message 
+
+
