@@ -181,19 +181,19 @@ class authorizenet_aim extends base {
    *
    * @return string
    */
-  function process($products,$customer,$address_book,$total) {
+  function process($products,$customer,$address_book,$total,$country,$zone) {
    
     if ($this->pre_confirmation_check()==0){
         return false;
     }
-
-    return $this->before_process($products,$customer,$address_book,$total);
+    
+    return $this->before_process($products,$customer,$address_book,$total,$country,$zone);
   }
   /**
    * Store the CC info to the order and process any results that come back from the payment gateway
    *
    */
-  function before_process($products,$customer,$address_book,$total) {
+  function before_process($products,$customer,$address_book,$total,$country,$state) {
    
     $db=$GLOBALS['db'];
     
@@ -208,7 +208,7 @@ class authorizenet_aim extends base {
     $this->order->info['tax']=0;
     
 
-    
+   
     //$sessID = zen_session_id();
     $sessID=session_id();
     
@@ -266,25 +266,25 @@ class authorizenet_aim extends base {
                          'x_card_code' => $this->order->info['cc_cvv'],
                          'x_email_customer' => MODULE_PAYMENT_AUTHORIZENET_AIM_EMAIL_CUSTOMER == 'True' ? 'TRUE': 'FALSE',
                          'x_email_merchant' => MODULE_PAYMENT_AUTHORIZENET_AIM_EMAIL_MERCHANT == 'True' ? 'TRUE': 'FALSE',
-                         'x_cust_id' => STORE_1_WAK_IN_CUSTOMER_ID,
+                         'x_cust_id' => $customer->customers_id,
                          'x_invoice_num' => (MODULE_PAYMENT_AUTHORIZENET_AIM_TESTMODE == 'Test' ? 'TEST-' : '') . $this->new_order_id,
                          'x_first_name' => $customer->customers_firstname,
                          'x_last_name' => $customer->customers_lastname,
                          'x_company' => $address_book->entry_company,
                          'x_address' => $address_book->entry_street_address,
                          'x_city' => $address_book->entry_city,
-                         'x_state' => $address_book->entry_state,
+                         'x_state' => $state,
                          'x_zip' => $address_book->entry_postcode,
-                         'x_country' => "USA",
+                         'x_country' => $country,
                          'x_phone' => $customer->customers_telephone,
                          'x_email' => $customer->customers_email_address,
                          'x_ship_to_first_name' => $customer->customers_firstname,
                          'x_ship_to_last_name' => $customer->customers_lastname,
                          'x_ship_to_address' =>  $address_book->entry_street_address,
                          'x_ship_to_city' => $address_book->entry_city,
-                         'x_ship_to_state' => $address_book->entry_state,
+                         'x_ship_to_state' => $state,
                          'x_ship_to_zip' => $address_book->entry_postcode,
-                         'x_ship_to_country' => "USA",
+                         'x_ship_to_country' => $country,
                          'x_description' => $description,
                          'x_recurring_billing' => 'NO',
                          'x_customer_ip' => $_SERVER['REMOTE_ADDR'],
@@ -304,6 +304,7 @@ class authorizenet_aim extends base {
      
     $response = $this->_sendRequest($submit_data);
     
+            
     $response_code = $response[0];
     $response_text = $response[3];
     $this->auth_code = $response[4];
@@ -350,10 +351,11 @@ class authorizenet_aim extends base {
   
     $db=$GLOBALS['db'];
             
-    $db->set("comments","Credit Card payment.  AUTH: ". $this->auth_code . '. TransID: ' . $this->transaction_id . '.');
+  //  $db->set("comments","Credit Card payment.  AUTH: ". $this->auth_code . '. TransID: ' . $this->transaction_id . '.');
+    $db->set("comments","Credit Card payment.  AUTH: In Store Sales");
     $db->set("orders_id",$this->new_order_id);
     $db->set("orders_status_id",$this->order_status);
-    $db->set("customer_notified",-1);
+    $db->set("customer_notified",1);
     $date = new DateTime();
     $datetime = $date->format('Y-m-d H:i:s');
     $db->set("date_added",$datetime);

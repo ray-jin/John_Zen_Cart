@@ -18,7 +18,7 @@ class Store extends CI_Controller
                 $GLOBALS ['db']=$db;
   
                 $this->load->model('store_model');
-               
+                $this->load->model('variable');
                                                 
 	}
 	
@@ -197,8 +197,8 @@ class Store extends CI_Controller
                 echo json_encode($result);  
                 return;
             }
-            
-            $this->store_model->defineVariables();
+                        
+            $this->variable->defineVariables();
             
             $payment=$_REQUEST['payment_method'];
             $GLOBALS ['currency']=DEFAULT_CURRENCY;
@@ -225,8 +225,9 @@ class Store extends CI_Controller
 
                 $i++;
             }
-            
+          //  define ('JOHN_CUSTOMER_ID',2786);
             $store_1_walk_in_customer=$this->store_model->get_customer_by_id(STORE_1_WAK_IN_CUSTOMER_ID);
+            //$store_1_walk_in_customer=$this->store_model->get_customer_by_id(JOHN_CUSTOMER_ID);
             $address_book=$this->store_model->get_address_book_by_id($store_1_walk_in_customer->customers_default_address_id);
             $new_order_id="";
             $payment_info=array();
@@ -235,15 +236,22 @@ class Store extends CI_Controller
             if ($payment=="Credit Card"){                 
                 $aim=new authorizenet_aim();
                 $aim->cc_card_owner=$_REQUEST['authorizenet_aim_cc_owner'];
-                if ($aim->process($products,$store_1_walk_in_customer,$address_book ,$order_total)==false){
-                    $result['status'] = $this->config->item('fail');
+                $country=$this->store_model->get_country_by_id($address_book->entry_country_id);
+                $zone=$this->store_model->get_zone_by_id($address_book->entry_zone_id);
+                
+                //test purpose
+                if ($aim->process($products,$store_1_walk_in_customer,$address_book ,$order_total,$country->countries_name,$zone->zone_name)==false){
+                
+                
+                    /*$result['status'] = $this->config->item('fail');
                     $result['error'] = $aim->error;                    
                      echo json_encode($result);
-                     return;
-                }
+                     return;*/
+                } 
                 $new_order_id=$aim->new_order_id;
                                        
-                $payment_info=$aim->order->info;                
+                $payment_info=$aim->order->info; 
+                
             }
             else if ($payment=="moneyorder"){
                 //$moneyorder=new moneyorder();
@@ -267,8 +275,11 @@ class Store extends CI_Controller
             $ip_address=$_SERVER['REMOTE_ADDR'];
             //add record to store_1_sales_orders table
             
-	
-            $order_id=$this->store_model->create_in_store_1_sales_order($new_order_id,$order_total,$payment_info,
+            define('PROCESSING_STATUS', 1);
+            
+            $payment_info['cc_number'] = (isset($payment_info['cc_number']) && $payment_info['cc_number'] != '') ?  str_repeat('X', (strlen($payment_info['cc_number']) - 4)) . substr($payment_info['cc_number'], -4) . "\n\n" : '';
+            
+            $order_id=$this->store_model->create_in_store_1_order($new_order_id,$order_total,PROCESSING_STATUS ,$payment_info,
                     $order_tax,$ip_address,$payment_method);
             if (!$order_id || $order_id==0){
                 $result['status']=$this->config->item('fail');
@@ -313,6 +324,7 @@ class Store extends CI_Controller
                 return;
             }
             
+          
             //deduct option values from Store #1 option value tables
             if ($this->store_model->update_option_values($products,$language_id)){
                                 
@@ -320,8 +332,10 @@ class Store extends CI_Controller
                 $result['status']=$this->config->item('success');
             }
             
-             /*if ($payment=="Credit Card"){                 
+             if ($payment=="Credit Card"){                 
                 $aim->order_status=In_Store_Sales_1_ORDER_STATUS_ID;
+                $aim->new_order_id=$order_id;
+                
                 if (!$aim->after_process()){
                     $result['status'] = $this->config->item('fail');
                     $result['error'] ="Afer process failed";
@@ -329,8 +343,11 @@ class Store extends CI_Controller
                 //    return;
                 }
                 
+                //change the order status
+                $this->store_model->update_order_status($order_id,In_Store_Sales_1_ORDER_STATUS_ID);
+                
             }
-            else if ($payment=="moneyorder"){
+            /*else if ($payment=="moneyorder"){
                 //do nothing
             }
             else{
@@ -340,6 +357,9 @@ class Store extends CI_Controller
                 return;
             }*/
             
+            
+            // restock the product options
+            $this->store_model->restock_values($language_id,$ip_address);
             echo json_encode($result);
    
 	}
