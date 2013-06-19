@@ -208,13 +208,13 @@ class authorizenet_aim extends base {
     $this->order->info['tax']=0;
     
 
-   
+    
     //$sessID = zen_session_id();
     $sessID=session_id();
     
     // DATA PREPARATION SECTION
     unset($submit_data);  // Cleans out any previous data stored in the variable
-
+    return true;
     // Create a string that contains a listing of products ordered for the description field
     $description = '';
        

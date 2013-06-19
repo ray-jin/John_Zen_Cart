@@ -1,0 +1,132 @@
+<form action="http://localhost/John_zen_cart/index.php/store/checkout_products" method="post">
+    <table border="!" width="900" cellspacing="0" cellpadding="0" >
+     <tbody>
+         <tr>
+            <th scope="col" id="scQuantityHeading">Qty.</th>
+            <th scope="col" id="scProductsHeading">Item Name</th>
+            <th scope="col" id="scUnitHeading">Unit</th>
+            <th scope="col" id="scTotalHeading">Total</th>
+            
+        </tr>
+         <!-- Loop through all products /-->
+        <tr >
+            <td>
+                <input type="text" name="quantity[]" value="20"/> <!-- For product value 5 /-->
+            </td>
+
+            <td >
+
+                <br >
+                <span> 
+                    <input type="text" name="product_name[]" value="Electronic Cigarettes Inc. Duo Pro Express Starter Kit" size="50"/>
+                    </span><br/>
+                <span>productid:</span><input type="text" name="product_id[]" value="5"/>
+                <br/>
+                <div >
+                    <ul>
+                        <li>
+                            <br/>
+                            Duo Pro Battery <br/>
+                            option_id : <input type="text" name="pid_option5[]" value="45">  <br/> <br/>
+                            Duo Pro Battery - White - Automatic Battery : <br/>
+                            option_value_id : <input type="text" name="pid5[]" value="238"> 
+                        </li>
+                        <li>
+                            <br/>
+                            Duo Pro 5pk Cartridge Type <br/>
+                            option_id : <input type="text" name="pid_option5[]" value="26">  <br/> <br/>
+                            Duo Pro Carts - Tobacco Low - 6mg : <br/>
+                            option_value_id : <input type="text" name="pid5[]" value="131">  <br/>
+                        </li>
+                    </ul>
+                </div>       
+            </td>
+            <td >
+                 <input type="text" name="final_price[]" value="44.95"/>$ <!-- For product value 5 /-->
+            </td>
+            <td >$899.00</td>
+     </tr>
+     <tr >
+       <td><input type="text" name="quantity[]" value="5"/></td>
+       <td >
+            <br >
+                <span>
+                    <input type="text" name="product_name[]" value="Storm Clearomizer Replacement Coil" size="40"/>
+                    </span><br/>
+                <span>productid:</span><input type="text" name="product_id[]" value="141"/>
+                <br/>
+                <div >
+                    <ul>
+                        <li>
+                            <br/>
+                           Storm Clearomizer Coil: <br/>
+                           option_id : <input type="text" name="pid_option141[]" value="97">  <br/>
+                           Storm Clearomizer Coil Replacement : <br/>
+                           option_value_id : <input type="text" name="pid141[]" value="743">  <br/>
+                        </li>
+                    </ul>
+                </div> 
+        </td>
+
+       <td >
+           <input type="text" name="final_price[]" value="3.95"/>$ <!-- For product value 5 /-->
+       </td>
+       <td >$19.75</td>
+
+     </tr>
+       <!-- Finished loop through all products /-->
+       <tr>
+           <td colspan="4">
+               Language:
+               <select name="language_id">
+                   <option value="1">English</option>
+               </select>
+           </td>
+       </tr> 
+       
+       <tr>
+           <td >
+              Order Total : <input type="text" name="order_total" value="1.2"/>
+           </td>
+           <td >
+              Sub Total: <input type="text" name="sub_total" value="1.1"/>
+           </td>
+            <td >
+              Order Tax : <input type="text" name="order_tax" value="0.1"/>
+           </td>
+           <td >
+              Payment Method : <input type="text" name="payment_method" value="Credit Card"/>
+           </td>
+       </tr> 
+       
+      </tbody>
+    </table>
+    <fieldset>
+        <legend>Payment Method</legend>
+
+
+        <p class="important">Please select a payment method for this order.</p>
+
+        <input type="radio" name="payment" value="authorizenet_aim" checked="checked" id="pmt-authorizenet_aim">
+        <label for="pmt-authorizenet_aim" class="radioButtonLabel">Credit Card</label>
+
+        <br class="clearBoth">
+
+
+        <div class="ccinfo">
+        <label for="cc_number" class="inputLabelPayment">Credit Card Number:</label>
+        <input type="text" name="cc_number" id="cc_number" value="5581223402015206"><br class="clearBoth">
+        <label for="authorizenet_aim-cc-expires-month" class="inputLabelPayment">Expiry Date:</label>
+        <input type="text" name="exp_date" id="exp_date" value="23"><br class="clearBoth">
+       
+       
+        <br class="clearBoth">
+        <br class="clearBoth">
+    </fieldset>
+    <fieldset>
+        <legend>Free Shipper</legend>
+    </fieldset>
+
+<input type="submit" value="Send">
+
+</form>

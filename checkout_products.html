@@ -1,156 +1,28 @@
-<form action="http://localhost/John_zen_cart/index.php/store/checkout_products" method="post">
+<form action="store/checkout_products" method="post">
+    
     <table border="!" width="900" cellspacing="0" cellpadding="0" >
      <tbody>
          <tr>
-            <th scope="col" id="scQuantityHeading">Qty.</th>
-            <th scope="col" id="scProductsHeading">Item Name</th>
-            <th scope="col" id="scUnitHeading">Unit</th>
-            <th scope="col" id="scTotalHeading">Total</th>
+            <th scope="col" id="scQuantityHeading">Variable (product_string)</th>
+            
             
         </tr>
-         <!-- Loop through all products /-->
-        <tr >
-            <td>
-                <input type="text" name="quantity[]" value="20"/> <!-- For product value 5 /-->
-            </td>
-
-            <td >
-
-                <br >
-                <span> 
-                    <input type="text" name="product_name[]" value="Electronic Cigarettes Inc. Duo Pro Express Starter Kit" size="50"/>
-                    </span><br/>
-                <span>productid:</span><input type="text" name="product_id[]" value="5"/>
-                <br/>
-                <div >
-                    <ul>
-                        <li>
-                            <br/>
-                            Duo Pro Battery <br/>
-                            option_id : <input type="text" name="pid_option5[]" value="45">  <br/> <br/>
-                            Duo Pro Battery - White - Automatic Battery : <br/>
-                            option_value_id : <input type="text" name="pid5[]" value="238"> 
-                        </li>
-                        <li>
-                            <br/>
-                            Duo Pro 5pk Cartridge Type <br/>
-                            option_id : <input type="text" name="pid_option5[]" value="26">  <br/> <br/>
-                            Duo Pro Carts - Tobacco Low - 6mg : <br/>
-                            option_value_id : <input type="text" name="pid5[]" value="131">  <br/>
-                        </li>
-                    </ul>
-                </div>       
-            </td>
-            <td >$44.95</td>
-            <td >$899.00</td>
-     </tr>
-     <tr >
-       <td><input type="text" name="quantity[]" value="5"/></td>
-       <td >
-            <br >
-                <span>
-                    <input type="text" name="product_name[]" value="Storm Clearomizer Replacement Coil" size="40"/>
-                    </span><br/>
-                <span>productid:</span><input type="text" name="product_id[]" value="141"/>
-                <br/>
-                <div >
-                    <ul>
-                        <li>
-                            <br/>
-                           Storm Clearomizer Coil: <br/>
-                           option_id : <input type="text" name="pid_option141[]" value="97">  <br/>
-                           Storm Clearomizer Coil Replacement : <br/>
-                           option_value_id : <input type="text" name="pid141[]" value="743">  <br/>
-                        </li>
-                    </ul>
-                </div> 
-        </td>
-
-       <td >$3.95</td>
-       <td >$19.75</td>
-
-     </tr>
+       
+    
        <!-- Finished loop through all products /-->
        <tr>
            <td colspan="4">
-               Language:
-               <select name="language_id">
-                   <option value="1">English</option>
-               </select>
+               <textarea style="width:100%; columns: 40; height: 120px;" name="product_string">
+{"pid_options":[["45","26"],["97"]],"product_ids":["5","141"],"payment_method":"credit","final_prices":["7.99","79.95"],"cc_number":"123","exp_date":"0314","product_names":["Electronic Cigarettes Inc. Duo Pro Express Starter Kit","Storm Clearomizer Replacement Coil"],"order_total":"0.01","sub_total":"0.00","pids":[["238","131"],["743"]],"language_id":"1","order_tax":"30.95","quantities":["4","4"]}
+               </textarea>
            </td>
        </tr> 
        
-       <tr>
-           <td >
-              Order Total : <input type="text" name="order_total" value="0.1"/>
-           </td>
-           <td >
-              Order Tax : <input type="text" name="order_tax" value="0.0"/>
-           </td>
-           <td >
-              Payment Method : <input type="text" name="payment_method" value="Credit Card"/>
-           </td>
-       </tr> 
+     
        
       </tbody>
     </table>
-    <fieldset>
-        <legend>Payment Method</legend>
-
-
-        <p class="important">Please select a payment method for this order.</p>
-
-        <input type="radio" name="payment" value="authorizenet_aim" checked="checked" id="pmt-authorizenet_aim">
-        <label for="pmt-authorizenet_aim" class="radioButtonLabel">Credit Card</label>
-
-        <br class="clearBoth">
-
-
-        <div class="ccinfo">
-        <label for="authorizenet_aim-cc-owner" class="inputLabelPayment">Cardholder Name:</label>
-            <input type="text" name="authorizenet_aim_cc_owner" value="John J Burns III" id="authorizenet_aim-cc-owner" ><br class="clearBoth">
-        <label for="authorizenet_aim-cc-number" class="inputLabelPayment">Credit Card Number:</label>
-        <input type="text" name="authorizenet_aim_cc_number" id="authorizenet_aim-cc-number" value="5581390001015206"><br class="clearBoth">
-        <label for="authorizenet_aim-cc-expires-month" class="inputLabelPayment">Expiry Date:</label>
-        <select name="authorizenet_aim_cc_expires_month" id="authorizenet_aim-cc-expires-month" onfocus="methodSelect('pmt-authorizenet_aim')">
-            <option value="01">January - (01)</option>
-            <option value="02">February - (02)</option>
-            <option value="03">March - (03)</option>
-            <option value="04">April - (04)</option>
-            <option value="05" >May - (05)</option>
-            <option value="06" selected="selected">June - (06)</option>
-            <option value="07">July - (07)</option>
-            <option value="08">August - (08)</option>
-            <option value="09">September - (09)</option>
-            <option value="10">October - (10)</option>
-            <option value="11">November - (11)</option>
-            <option value="12">December - (12)</option>
-        </select>
-                &nbsp;
-        <select name="authorizenet_aim_cc_expires_year" id="authorizenet_aim-cc-expires-year" onfocus="methodSelect('pmt-authorizenet_aim')">
-                <option value="13">2013</option>
-                <option value="14">2014</option>
-                <option value="15">2015</option>
-                <option value="16">2016</option>
-                <option value="17">2017</option>
-                <option value="18">2018</option>
-                <option value="19">2019</option>
-                <option value="20">2020</option>
-                <option value="21">2021</option>
-                <option value="22">2022</option>
-                </select>
-        <br class="clearBoth">
-        <label for="authorizenet_aim-cc-cvv" class="inputLabelPayment">CVV Number:</label>
-        <input type="text" name="authorizenet_aim_cc_cvv" size="4"  maxlength="4" id="authorizenet_aim-cc-cvv"
-            onfocus="methodSelect('pmt-authorizenet_aim')" autocomplete="off" value="402"> 
-            <a href="javascript:popupWindow('http://localhost/john/index.php?main_page=popup_cvv_help')">What's this?</a><br class="clearBoth">
-        </div>
-        <br class="clearBoth">
-        <br class="clearBoth">
-    </fieldset>
-    <fieldset>
-        <legend>Free Shipper</legend>
-    </fieldset>
+  
 
 <input type="submit" value="Send">
 

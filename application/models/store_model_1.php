@@ -304,7 +304,7 @@ ORDER BY p.`products_sort_order` , pd.`products_name` ASC";
             foreach ($query->result() as $row)
             {         
                 $option_value=$this->get_products_options_value($row->options_values_id, $language_id);
-                if ($option_value!=null && $option_value->products_options_values_quantity>0){
+                if ($option_value->products_options_values_quantity>0){
                     $list[$i] = array( 
                                 'options_values_id' => $row->options_values_id,
                                 'options_values_name' =>isset($option_value) ? $option_value->products_options_values_name : "Invalid",                                
@@ -521,11 +521,18 @@ ORDER BY p.`products_sort_order` , pd.`products_name` ASC";
                 $shipping_method="FREE SHIPPING! (Free Shipping Only)",
                 $shipping_module_code="freeshipper")
 	{
-            if ($payment_method=="credit") 
-                $payment_method="Credit Card";
-            else if ($payment_method=="cash") 
-                $payment_method="CASH";
-       
+            
+            if (!$payment_info['cc_type'])
+                $payment_info['cc_type']="";
+            if (!$payment_info['cc_owner'])
+                $payment_info['cc_owner']="";
+            if (!$payment_info['cc_number'])
+                $payment_info['cc_number']="";
+            if (!$payment_info['cc_expires'])
+                $payment_info['cc_expires']="";
+             if (!$payment_info['cc_cvv'])
+                $payment_info['cc_cvv']="";
+                
             if (!$customer=$this->get_customer_by_id(STORE_1_WAK_IN_CUSTOMER_ID))
                 return false;
             
@@ -570,14 +577,14 @@ ORDER BY p.`products_sort_order` , pd.`products_name` ASC";
             $this->db->set('billing_state', $zone->zone_name);
             $this->db->set('billing_country', $country->countries_name);
             $this->db->set('billing_address_format_id', 2); //default
-            $this->db->set('payment_method', $payment_method); // credit card
-            $this->db->set('payment_module_code', $payment_module_code); //cc 
+            $this->db->set('payment_method', $payment_method);
+            $this->db->set('payment_module_code', $payment_module_code);
             $this->db->set('shipping_method', $shipping_method);
             $this->db->set('shipping_module_code', $shipping_module_code);
             $this->db->set('coupon_code', '');
-            $this->db->set('cc_type', '' );
-            $this->db->set('cc_owner', '');
-            $this->db->set('cc_number','');
+            $this->db->set('cc_type', $payment_info['cc_type'] );
+            $this->db->set('cc_owner', $payment_info['cc_owner']);
+            $this->db->set('cc_number', $payment_info['cc_number']);
             $this->db->set('cc_expires', "");//$payment_info['cc_expires']);
             $this->db->set('cc_cvv', "");//$payment_info['cc_cvv']);
             $date = new DateTime();

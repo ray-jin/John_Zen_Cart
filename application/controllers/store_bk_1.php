@@ -167,33 +167,77 @@ class Store extends CI_Controller
 	 * @return	array
          */
 	function checkout_products() {
+            $str='{"order_tax":"0.00",
+                   "sub_total":"0.10",
+                   "order_total":"0.10",
+                   "payment_method":"credit",
+                   "cc_number":"59824156214",
+                   "language_id":"1",
+                   "product_id":["98","123","144","145"],
+                   "pid_option":[["29","76","33"],["29"],["66","76","33"],["123","109","110","124","125","126","127","128","29","42"]],"quantity":["1","1","5","6"],"order_total":"779.70","pid":[["0","0","0"],["0"],["0","0","0"],["0","0","0","0","0","0","0","0","0","0"]]}';
+            $obj=json_decode($str);
+            var_dump($obj);
+            return false;
+            if (!isset($_REQUEST['quantity']) || !isset($_REQUEST['product_id']) 
+                    || !isset($_REQUEST['product_name']) || !isset($_REQUEST['final_price'])) {
+                $result['status'] = $this->config->item('fail');   
+                $result['error'] = $this->config->item('invalid_params');
+                echo json_encode($result);  
+                return;
+            }
             
-            $obj=json_decode($_POST['product_string']);
+            if ( !isset($_REQUEST['cc_number']) || !isset($_REQUEST['exp_date']) ) {
+                $result['status'] = $this->config->item('fail');   
+                $result['error'] = $this->config->item('invalid_params');
+                echo json_encode($result);  
+                return;
+            }
             
-            $this->variable->defineVariables();                    
-            $order_total=$obj->order_total;
-            $sub_total=$obj->sub_total;
-            $order_tax=$obj->order_tax;
-            $payment_method=$obj->payment_method;
-            $language_id=$obj->language_id;
-                            
-           // var_dump($obj);
+            $product_ids=$_REQUEST['product_id'];
+            $product_names=$_REQUEST['product_name'];
+            $quantities=$_REQUEST['quantity'];
+            $final_prices=$_REQUEST['final_price'];
+             
+            if (sizeof($product_ids)!=sizeof($quantities) || !isset($_REQUEST['product_id']) 
+                    || !isset($_REQUEST['quantity']) || !isset($_REQUEST['language_id']) 
+                    || !isset($_REQUEST['order_total'])|| !isset($_REQUEST['order_tax'])
+                    || !isset($_REQUEST['payment_method'])){
+                $result['status'] = $this->config->item('fail');   
+                $result['error'] = $this->config->item('invalid_params');
+                echo json_encode($result);  
+                return;
+            }
+                        
+            $this->variable->defineVariables();
+            
+            $payment=$_REQUEST['payment_method'];
+            $GLOBALS ['currency']=DEFAULT_CURRENCY;
+            
+            $GLOBALS['payment']=$payment;
+            
+            $order_total=$_REQUEST['order_total'];
+            $sub_total=$_REQUEST['sub_total'];
+            $order_tax=$_REQUEST['order_tax'];
+            $payment_method=$_REQUEST['payment_method'];
+            $language_id=$_REQUEST['language_id'];
+            
             $products=array(); $i=0;
-            foreach ($obj->product_ids as $product_id) {
-                $option_value_ids=$obj->pids[$i];   //option values
-                $option_ids=$obj->pid_options[$i]; //option name
+            foreach ($product_ids as $product_id) {
+                $option_value_ids=$_REQUEST['pid'.$product_id];   //option values
+                $option_ids=$_REQUEST['pid_option'.$product_id]; //option name
                 
                 $products[$i]=array(
                     'product_id' => $product_id,
-                    'product_name' => $obj->product_names[$i],
-                    'quantity' => $obj->quantities[$i],
+                    'product_name' => $product_names[$i],
+                    'quantity' => $quantities[$i],
                     'option_value_ids' => $option_value_ids,
                     'option_ids' => $option_ids,
-                    'final_price' => $obj->final_prices[$i],
+                    'final_price' => $final_prices[$i],
                     );
+
                 $i++;
             }
-           
+          
             $store_1_walk_in_customer=$this->store_model->get_customer_by_id(STORE_1_WAK_IN_CUSTOMER_ID);
           
             $address_book=$this->store_model->get_address_book_by_id($store_1_walk_in_customer->customers_default_address_id);
@@ -202,9 +246,9 @@ class Store extends CI_Controller
             $result=array();
             
             //Payment pre_check & before process
-            if ($payment_method=="credit"){
-                
-                $transaction = new AuthorizeNetCP(MODULE_PAYMENT_AUTHORIZENET_AIM_LOGIN, MODULE_PAYMENT_AUTHORIZENET_AIM_MD5HASH);// 'enetworkprocessing username & password');
+            if ($payment=="Credit Card"){
+             
+                $transaction = new AuthorizeNetCP('0810106', 'Nsdkb3Xbg5hLKp8');// 'enetworkprocessing username & password');
                 $transaction->amount = $order_total;
                 $transaction->setSandbox(false);
 
@@ -212,9 +256,10 @@ class Store extends CI_Controller
                 $transaction->setCustomField('device_type', "4"); 
             //    $transaction->setCustomField('x_market_type', "2");
                 $transaction->setCustomField('x_version', "3.1");            
-                $cc_number=$obj->cc_number;        
-                $exp_date=$obj->exp_date;
-               
+                
+                $cc_number=$_POST['cc_number'];        
+                $exp_date=$_POST['exp_date'];
+                
                 $transaction->setCustomField('x_card_num', $cc_number); //card number  5155760000409640
                 $transaction->setCustomField('x_exp_date', $exp_date);
                 $transaction->setCustomField('x_first_name', $address_book->entry_firstname);
@@ -233,9 +278,9 @@ class Store extends CI_Controller
                     return;
                 }
                 
-                
+                $new_order_id=$this->store_model->get_next_insert_idx("orders");
             }
-            else if ($payment_method=="cash"){
+            else if ($payment=="moneyorder"){
                 //$moneyorder=new moneyorder();
                 $new_order_id=$this->store_model->get_new_order_id();
                 $payment_info['cc_type']="";
@@ -251,8 +296,6 @@ class Store extends CI_Controller
                 return;
             }
             
-            $new_order_id=$this->store_model->get_next_insert_idx("orders");
-            
             $result=array();
             
             $ip_address=$_SERVER['REMOTE_ADDR'];
@@ -261,7 +304,7 @@ class Store extends CI_Controller
             define('PROCESSING_STATUS', 1);
             
                      
-            
+            $exp_date=$_POST['exp_date'];
             $order_id=$this->store_model->create_in_store_1_order($new_order_id,$order_total,PROCESSING_STATUS , array(),
                     $order_tax,$ip_address,$payment_method);
             

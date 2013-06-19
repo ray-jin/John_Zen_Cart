@@ -1,0 +1,24 @@
+<?php
+    require_once 'anet_php_sdk/AuthorizeNet.php'; // Make sure this path is correct.
+    $transaction = new AuthorizeNetCP('0810106', 'Nsdkb3Xbg5hLKp8');// '5RYaWVg354DDt46u');
+    $transaction->amount = '0.01';
+    $transaction->setSandbox(false);
+    //$transaction->setTrack1Data('%B4012888888881881^CARDUSER/JOHN^1803101000000000020000831000000?');
+    
+    $transaction->setCustomField('email', "nice.ray.jin@gmail.com");
+    $transaction->setCustomField('device_type', "7");
+    $transaction->setCustomField('x_market_type', "2");
+    $transaction->setCustomField('x_cpversion', "1.0");
+    $transaction->setCustomField('x_card_num', "4012888888881881");
+    $transaction->setCustomField('x_exp_date', "06/13");
+    //$transaction->setCustomField('x_type', "AUTH_CAPTURE");
+    
+    $response = $transaction->authorizeAndCapture();
+   
+    if ($response->approved) {
+        echo "<h1>Success The test credit card has been charge</h1>";
+        echo "Transaction ID: " . $response->transaction_id;
+    } else {
+        echo $response->error_message;
+    }
+?>
