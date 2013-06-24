@@ -39,10 +39,10 @@ define('DIR_WRITE_MODE', 0777);
   
         
         
-        define('DIR_FS_CATALOG', 'http://192.168.180.90:1300//john/');
+        define('DIR_FS_CATALOG', 'http://www.electroniccigarettesinc.com/');
 
         //the following path is a COMPLETE path to the /logs/ folder  eg: /var/www/vhost/accountname/public_html/store/logs ... and no trailing slash
-        define('DIR_FS_LOGS', 'C:/xampp/htdocs/zen-cart/logs');
+        define('DIR_FS_LOGS', 'logs/');
 
         define('DIR_FS_CATALOG_LANGUAGES', DIR_FS_CATALOG . 'includes/languages/');
         define('DIR_FS_CATALOG_IMAGES', DIR_FS_CATALOG . 'images/');

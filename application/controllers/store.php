@@ -202,6 +202,7 @@ class Store extends CI_Controller
             $result=array();
             
             //Payment pre_check & before process
+            
             if ($payment_method=="credit"){
                 
                 $transaction = new AuthorizeNetCP(MODULE_PAYMENT_AUTHORIZENET_AIM_LOGIN, MODULE_PAYMENT_AUTHORIZENET_AIM_MD5HASH);// 'enetworkprocessing username & password');
@@ -231,13 +232,10 @@ class Store extends CI_Controller
                     $result['pay_message']= $response->response_reason_text;
                     echo json_encode($result);
                     return;
-                }
-                
-                
+                }                
             }
             else if ($payment_method=="cash"){
-                //$moneyorder=new moneyorder();
-                $new_order_id=$this->store_model->get_new_order_id();
+                
                 $payment_info['cc_type']="";
                 $payment_info['cc_owner']="";
                 $payment_info['cc_number']="";
@@ -259,8 +257,6 @@ class Store extends CI_Controller
             //add record to store_1_sales_orders table
             
             define('PROCESSING_STATUS', 1);
-            
-                     
             
             $order_id=$this->store_model->create_in_store_1_order($new_order_id,$order_total,PROCESSING_STATUS , array(),
                     $order_tax,$ip_address,$payment_method);
@@ -311,6 +307,7 @@ class Store extends CI_Controller
             
           
             //deduct option values from Store #1 option value tables
+            // add sold quantity on to sold_store_1 table
             if ($this->store_model->update_option_values($products,$language_id)){
                                 
                 //add one order record in main order table under the status of "In Store Sales #1"                  
@@ -336,7 +333,8 @@ class Store extends CI_Controller
             */
             
             // restock the product options
-            $this->store_model->restock_values($language_id,$ip_address);
+            
+            $this->store_model->restock_values($products,$language_id);
             echo json_encode($result);
    
 	}

@@ -83,7 +83,6 @@ class Variable extends CI_Model {
             define('EMAIL_SPAM_DISCLAIMER','This email is sent in accordance with the US CAN-SPAM Law in effect 01/01/2004. Removal requests can be sent to this address and will be honored and respected.');
             define('EMAIL_FOOTER_COPYRIGHT','Copyright (c) ' . date('Y') . ' Powered by <a href="http://www.zen-cart.com" target="_blank">Zen Cart</a>');
             
-
             $configuration=array(
                 "QUANTITY_DECIMALS",
                 "STORE_PRODUCT_TAX_BASIS",
@@ -97,8 +96,10 @@ class Variable extends CI_Model {
                 "CURRENCIES_TRANSLATIONS",
                 "ADMIN_EXTRA_EMAIL_FORMAT",
                 "CC_ENABLED",
-                "Store_1_Restock_Days",
+                "STORE_1_RESTOCK_DAYS",
+                "STORE_1_CHECK_BACK_DAYS",
             );
+            
             foreach ($configuration as $cfgKey){
                     $this->db->like('configuration_key', $cfgKey); // 0 : available
                     $this->db->select('configuration_value');

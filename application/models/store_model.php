@@ -150,7 +150,7 @@ ORDER BY c.`sort_order` asc , cd.`categories_name` ASC";
 	function list_products($categories_id,$language_id)
 	{
             
-            
+            $list=array();
                 $products_list=$this->list_products_to_categories($categories_id); //get list of product id
 
                  if (sizeof($products_list)==0)
@@ -171,7 +171,7 @@ ORDER BY c.`sort_order` asc , cd.`categories_name` ASC";
 WHERE `products_status` =  1  AND p.`products_id` IN ('123', '125', '134', '136', '141', '142')  AND p.`products_id`=pd.`products_id`
 ORDER BY p.`products_sort_order` , pd.`products_name` ASC*/
                 
-                $list=array(); $i=0;
+                 $i=0;
              
               /*  $this->db->where('products_status', 1);             
                 $this->db->where_in('products_id', $p_list);                
@@ -376,13 +376,35 @@ ORDER BY p.`products_sort_order` , pd.`products_name` ASC";
 	function update_option_values($products,$language_id)
 	{
             //repeat products and update all option_values with it
+            
 		foreach ($products as $product){
                     foreach ($product['option_value_ids'] as $option_value_id){
+                        // get current option values quantity
                         
-                        $sql="UPDATE `products_options_values_store_1`  SET `products_options_values_quantity` = `products_options_values_quantity`- ";
-                        $sql.=$product['quantity']." where `products_options_values_id` = ".$option_value_id." and `language_id` =  ".$language_id;
+                        $sql= "select products_options_values_quantity quantity                            
+                            from products_options_values_store_1 where products_options_values_id = ".$option_value_id;
+                        $result=$this->db->query($sql);
+                        $row = $result->row_array();
+                        $new_quantity = $row['quantity']-$product['quantity'];
+                        
+                        
+                        $sql="UPDATE `products_options_values_store_1`  SET `products_options_values_quantity` = ".$new_quantity;
+                        $sql.=" where `products_options_values_id` = ".$option_value_id." and `language_id` =  ".$language_id;
                         
                         $this->db->query($sql);
+                        
+                        //insert one item on products_options_values sold store_1 table                        
+                        
+                        $this->db->set('product_id', $product['product_id']);
+                        $this->db->set('from_products_options_values_id', $option_value_id); //need to consider
+                        $this->db->set('products_options_values_id', $option_value_id);
+                        $this ->db->set('sold_qty',$product['quantity']);
+                        $this->db->set('stock_left', $new_quantity);
+                        
+                        if (!$this->db->insert("products_options_values_sold_store_1")) {
+                             return false;
+                        }  
+
                     }
                 }
                                 
@@ -774,63 +796,69 @@ ORDER BY p.`products_sort_order` , pd.`products_name` ASC";
 		return $query->result();
 	}
         
+       function calculate_DA($option_value_id){
+                                   
+            //insert one item on products_options_values_store_1 table            
+            
+           $sql= "SELECT sum(sold_qty) AS sold_qty FROM products_options_values_sold_store_1 "
+                 ." WHERE from_products_options_values_id=".$option_value_id
+                 ." AND DATEDIFF(CURRENT_TIMESTAMP,create_date)<".STORE_1_RESTOCK_DAYS;
+           $result=$this->db->query($sql);
+           $row = $result->row_array();
+           if ($row)
+                return $row['sold_qty']/STORE_1_CHECK_BACK_DAYS;
+           else
+               return 0; // it is the beginning so avg_aty=sold_quantity of this time
+           
+       }
         
-        //travels all option values and if current quantity < (lead time + x days) * daily average, create re-stock order on main order table
-        function restock_values($language_id,$ip_address){
-            
-            $options_values=$this->list_all_products_options_value($language_id);
-            $option_value_comment="";
-            
-            foreach ($options_values as $option_value){
-                $quantity=$option_value->products_options_values_quantity;
-                $leadtime=$option_value->pov_leadtime;
-                $daily_average=$option_value->pov_daily_average;
-                $restock_value=  round((STORE_1_RESTOCK_DAYS + $leadtime) * $daily_average);
-                if ($quantity < $restock_value){
-                    $reorder_value=$restock_value-$quantity;
-                    $option_value_comment.=$option_value->products_options_values_name." : ".$reorder_value." | ";
-                    
-                    //Take plu $restock_value to store 1 product options
-                    
-                     $qry = array(
-                                        'products_options_values_quantity'=> $quantity+$reorder_value,                            
-                        );				
-                     $this->db->where('products_options_values_id', $option_value->products_options_values_id);           
-                     $this->db->update("products_options_values_store_1", $qry);
-                     
-                     //Take minus from main product options
-                    $sql="UPDATE `products_options_values_bk`  SET `products_options_values_quantity` = `products_options_values_quantity`- ";
-                        $sql.=$reorder_value." where `products_options_values_id` = ".$option_value->products_options_values_id." and `language_id` =  ".$language_id;
-                        
-                   $this->db->query($sql);
-                }
-            }
-            $new_order_id=$this->get_next_insert_idx(TABLE_ORDERS);
-            
-            $payment_info=array ('cc_type' => "" ,
-                 'cc_owner' => "" ,
-                 'cc_number' => "" ,
-                 'cc_expires' => "" ,
-                 'cc_cvv' => "" );
-             
-            $this->create_in_store_1_order($new_order_id, 0,  In_STORE_ORDER_1_ORDER_STATUS_ID, $payment_info,
-                            0,$ip_address,"","");
-            
-            //*************Insert Total cost**************
-            $this->db->set('orders_id', $new_order_id);
-            $this->db->set('title', "Total:");
-            $this->db->set('text', "$0.00");
-            $this->db->set('value', 0);
-            $this->db->set('class', "ot_total");
-            $this->db->set('sort_order', 3);
+        //travels all option values and if current quantity < lead time  * daily average, create re order on main order table
+        //should daily average within STORE_1_RESTOCK_DAYS
 
-            if (!$this->db->insert($this->tbl_orders_total_name)) {
-                return 0;
-            }
+        function restock_values($products,$language_id){
             
-            $this->create_status_history($new_order_id,In_STORE_SALES_1_ORDER_STATUS_ID,$option_value_comment);
+            foreach ($products as $product){
+                    foreach ($product['option_value_ids'] as $option_value_id){
+                        $da=$this->calculate_DA($option_value_id);
+                        if ($da==0)
+                            $da=$product['quantity']/STORE_1_CHECK_BACK_DAYS; // it is the beginning so avg_qty = quantity of this time.
+                        
+                        $option_value=$this->get_products_options_value($option_value_id, $language_id);
+                        $cur_quantity=$option_value->products_options_values_quantity;
+                        $leadtime=$option_value->pov_leadtime;
+                        
+                        if ($cur_quantity<$leadtime*$da){ // cur_quantity < reorder quantity = lead time x daily average
+                            
+                            $reorder_qty=round(STORE_1_RESTOCK_DAYS*$da+1); //convert it integer value
+                            
+                            //**********Update option values*********************
+                            $qry = array(
+                                        'products_options_values_quantity'=> $cur_quantity+$reorder_qty,                            
+                                );				
+                             $this->db->where('products_options_values_id', $option_value->products_options_values_id);           
+                             $this->db->update("products_options_values_store_1", $qry);
+
+                             //Take minus from main product options
+                            $sql="UPDATE `products_options_values_bk`  SET `products_options_values_quantity` = `products_options_values_quantity`- ";
+                                $sql.=$reorder_qty." where `products_options_values_id` = ".$option_value->products_options_values_id." and `language_id` =  ".$language_id;
+
+                           $this->db->query($sql);
+                           
+                            //*************Create new reorder record**************
+                           
+                           $this->db->set('product_id', $product['product_id']);
+                           $this->db->set('products_options_values_id', $option_value_id);
+                           $this->db->set('reorder_qty', $reorder_qty);                            
+
+                            if (!$this->db->insert("products_options_values_reorder_store_1")) {
+                                return 0;
+                            }                            
+                        }
+                    }
+            }
+            return 1;
+            
         }
-        
        
         
         function get_next_insert_idx($tbl_name) {
